@@ -1,189 +1,109 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct node{
-	int data;
-	struct node *next;
+struct node 
+{
+  int vertex;
+  struct node* next;
 };
 
+struct node* createNode(int v);
 
-typedef struct node node;
-node *head;
+struct Graph 
+{
+  int numVertices;
+  int* visited;
 
-void insert_end(){
-	int data;
-	node *temp,*pre;
-	
-	printf("\nEnter value : ");
-	scanf("%d",&data);
-	
-	temp=(node*)malloc(sizeof(node));
-	temp->data=data;
-	
-	if(head == NULL){
-		head=temp;
-		head->next=NULL;
-	}
-	else{
-		pre=head;
-		while(pre->next != NULL){
-			pre=pre->next;
-		}
-		pre->next=temp;
-		temp->next=NULL;
-	}	
+  struct node** adjLists;
+};
+
+void DFS(struct Graph* graph, int vertex) 
+{
+  struct node* adjList = graph->adjLists[vertex];
+  struct node* temp = adjList;
+
+  graph->visited[vertex] = 1;
+  printf("Visited %d \n", vertex);
+
+  while (temp != NULL) 
+  {
+    int connected_Vertex = temp->vertex;
+
+    if (graph->visited[connected_Vertex] == 0) 
+    {
+      DFS(graph, connected_Vertex);
+    }
+    temp = temp->next;
+  }
 }
 
-void insert_first(){
-	int data;
-	node *temp;
-	
-	printf("\nEnter value to insert : ");
-	scanf("%d",&data);
-	
-	temp=(node*)malloc(sizeof(node));
-	temp->data=data;
-		
-	if(head == NULL){
-		head=temp;
-		head->next=NULL;
-	}
-	else{
-		temp->next=head;
-		head=temp;
-	}
+struct node* createNode(int vert) 
+{
+  struct node* newNode = malloc(sizeof(struct node));
+  newNode->vertex = vert;
+  newNode->next = NULL;
+  return newNode;
 }
 
-void insert_pos(){
-	int data;
-	int pos;
-	int count=2;
-	node *temp,*pre;
-	printf("\nEnter value to insert : ");
-	scanf("%d",&data);
-	printf("\nEnter Position to insert : ");
-	scanf("%d",&pos);
-	temp=head;
-	pre=(node*)malloc(sizeof(node));
-	pre->data=data;
-	
-	if(head == NULL){
-		printf("\nList is Empty \n");
-	}
-	else if(pos == 1){
-			pre->next=head;
-			head=pre;
-	}
-	else{
-		temp=head;
-		while(temp->next != NULL){
-		if(pos==count){
-			pre->next=temp->next;
-			temp->next=pre;
-			break;
-		}
-		else{
-			temp=temp->next;
-			count++;
-		}
-	}
-	}
+struct Graph* createGraph(int vertices) 
+{
+  struct Graph* graph = malloc(sizeof(struct Graph));
+  graph->numVertices = vertices;
+
+  graph->adjLists = malloc(vertices * sizeof(struct node*));
+
+  graph->visited = malloc(vertices * sizeof(int));
+
+  int i;
+  
+  for (i = 0; i < vertices; i++) 
+  {
+    graph->adjLists[i] = NULL;
+    graph->visited[i] = 0;
+  }
+  return graph;
 }
 
-void display(){
-	node *temp;
-	int count=1;
-	temp=head;
-	if(head == NULL){
-		printf("\nList is Empty \n");
-	}
-	else{
-	while(temp->next != NULL){
-		printf("List [%d] : %d\n",count,temp->data);
-		temp=temp->next;
-		count++;
-	}
-	printf("List [%d] : %d\n",count,temp->data);
-}
+void addEdge(struct Graph* graph, int src, int dest) 
+{
+  struct node* newNode = createNode(dest);
+  newNode->next = graph->adjLists[src];
+  graph->adjLists[src] = newNode;
+
+  newNode = createNode(src);
+  newNode->next = graph->adjLists[dest];
+  graph->adjLists[dest] = newNode;
 }
 
-void search(){
-	node *temp;
-	int flag=0;
-	int count=1;
-	temp=head;
-	int data;
-	printf("Enter element to search : ");
-	scanf("%d",&data);
-	
-	if(head == NULL){
-		printf("\nList is Empty \n");
-	}
-	else{
-	while(temp->next != NULL){
-		if(data == temp->data){
-			flag=1;
-			break;
-		}
-		temp=temp->next;
-		count++;
-	}
-	if(temp->data == data){
-		flag=1;
-	}
-	if(flag==1){
-	printf("\nFound\n");
-	}
-	else{
-		printf("\nnot found\n");
-	}
-}
+void printDFS(struct Graph* graph) 
+{
+  int v;
+  for (v = 0; v < graph->numVertices; v++) 
+  {
+    struct node* temp = graph->adjLists[v];
+    printf("\nvertex %d\ : ", v);
+    while (temp) {
+      printf("%d -> ", temp->vertex);
+      temp = temp->next;
+    }
+    printf("\n");
+  }
 }
 
-/*void 	delete_e(){
-	node *temp;
-	
-	if(head == NULL){
-		printf("\nList is Empty \n");
-	}
-	
-}*/
+int main() 
+{
+  struct Graph* graph = createGraph(5);
+  addEdge(graph, 0, 1);
+  addEdge(graph, 0, 2);
+  addEdge(graph, 1, 3);
+  addEdge(graph, 1, 4);
+  addEdge(graph, 1, 2);
+  addEdge(graph, 2, 3);
+  addEdge(graph, 3, 4);
 
-int main() {
-	int opt;
-	do{
-		printf("\n1)Insert in FIRST");
-		printf("\n2)Insert in END");
-		printf("\n3)Insert @ a Position");
-		printf("\n4)Display");
-		printf("\n5)Search");
-		printf("\n6)Delete");
-		printf("\n0)Quiet\n");
-		printf("\nChoose option : ");
-		scanf("%d",&opt);
-		switch(opt){
-			case 1:
-				insert_first();
-				break;
-			case 2:
-				insert_end();
-				break;
-			case 3:
-				insert_pos();
-				break;
-			case 4:
-				display();
-				break;
-			case 5:
-				search();
-				break;
-			case 6:
-				//delete_e();
-				break;
-			deault:
-				printf("Invalid option ! Try Again..");
-		}
-	}while(opt!=0);
-	return 0;
-}
+  printDFS(graph);
+
+  DFS(graph, 0);
+
+  return 0;
 
